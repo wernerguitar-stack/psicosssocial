@@ -10,7 +10,7 @@ st.title("📊 Dashboard de avaliação dos riscos do Psicossocial NR-01")
 
 # =========================================================================
 # ID DA SUA PLANILHA GOOGLE
-ID_DA_PLANILHA = "1A2B3C4D5E6F7G8H9I0J_COLE_O_SEU_ID_AQUI"
+ID_DA_PLANILHA = "1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4"
 NOME_DA_ABA = "PLANILHA TÉCNICO" 
 # =========================================================================
 
