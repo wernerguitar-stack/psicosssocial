@@ -1,16 +1,16 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
+import requests  # Nova biblioteca para consultar a API da ReceitaWS
 
 # 1. Configuração da página do site
 st.set_page_config(page_title="Dashboard NR-01", layout="wide")
 
-# --- ALTERAÇÃO 1: Novo Nome do Painel ---
 st.title("📊 Dashboard de avaliação dos riscos do Psicossocial NR-01")
 
 # =========================================================================
 # ID DA SUA PLANILHA GOOGLE
-ID_DA_PLANILHA = "1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4"
+ID_DA_PLANILHA = "1A2B3C4D5E6F7G8H9I0J_COLE_O_SEU_ID_AQUI"
 NOME_DA_ABA = "PLANILHA TÉCNICO" 
 # =========================================================================
 
@@ -23,18 +23,35 @@ def carregar_dados():
     df[coluna_data] = pd.to_datetime(df[coluna_data], errors='coerce')
     return df
 
-# Função auxiliar para classificar os níveis de risco e suas cores
+# 🔥 NOVA FUNÇÃO: Busca o Nome da Empresa na ReceitaWS usando o CNPJ
+def buscar_nome_empresa(cnpj):
+    # Remove pontos, barras e traços do CNPJ, deixando apenas números
+    cnpj_limpo = "".join(filter(str.isdigit, str(cnpj)))
+    
+    try:
+        url = f"https://receitaws.com.br/v1/cnpj/{cnpj_limpo}"
+        resposta = requests.get(url, timeout=5)
+        
+        if resposta.status_code == 200:
+            dados_cnpj = resposta.json()
+            if dados_cnpj.get("status") == "OK":
+                # Retorna a Razão Social encontrada
+                return dados_cnpj.get("nome")
+    except Exception:
+        pass
+    return None # Caso dê erro ou não encontre, retorna None
+
 def obter_classificacao_risco(media):
     if media <= 1.99:
-        return "Risco Irrelevante", "#2E7D32", "🟢" # Verde Escuro
+        return "Risco Irrelevante", "#2E7D32", "🟢"
     elif 2.0 <= media <= 2.99:
-        return "Risco Baixo", "#4CAF50", "🟢"      # Verde Claro
+        return "Risco Baixo", "#4CAF50", "🟢"
     elif 3.0 <= media <= 3.99:
-        return "Risco Médio", "#FF9800", "🟡"      # Laranja
+        return "Risco Médio", "#FF9800", "🟡"
     elif 4.0 <= media <= 4.5:
-        return "Risco Alto", "#E53935", "🔴"       # Vermelho
+        return "Risco Alto", "#E53935", "🔴"
     else:
-        return "Risco Crítico", "#8B0000", "🚨"     # Vermelho Escuro
+        return "Risco Crítico", "#8B0000", "🚨"
 
 try:
     df_completo = carregar_dados()
@@ -51,7 +68,13 @@ try:
             st.warning(f"⚠️ O CNPJ '{cnpj_via_url}' não foi encontrado. Exibindo dados gerais.")
             df_original = df_completo
         else:
-            st.success(f"🏢 Empresa/CNPJ Selecionado: {cnpj_via_url}")
+            # 🏢 CHAMADA DA API DA RECEITA: Busca o nome real da empresa
+            nome_empresa = buscar_nome_empresa(cnpj_via_url)
+            
+            if nome_empresa:
+                st.success(f"🏢 Empresa Selecionada: **{nome_empresa}** ({cnpj_via_url})")
+            else:
+                st.success(f"🏢 Empresa/CNPJ Selecionado: {cnpj_via_url}")
     else:
         df_original = df_completo
         st.info("📊 Visão geral de todas as empresas.")
@@ -64,11 +87,10 @@ try:
     df_perguntas = df_original[colunas_perguntas]
     media_geral = df_perguntas.mean().mean()
 
-    # --- ALTERAÇÃO 2 e 3: Visão Geral e Termômetro de Risco Centralizado ---
+    # --- Visão Geral e Termômetro de Risco Centralizado ---
     st.markdown("---")
     st.subheader("📌 Visão Geral dos Riscos")
     
-    # Criando o grande destaque centralizado para o nível de risco
     nome_risco, cor_risco, emoji_risco = obter_classificacao_risco(media_geral)
     
     col_vazia1, col_central, col_vazia2 = st.columns([1, 2, 1])
@@ -84,7 +106,7 @@ try:
             unsafe_allow_html=True
         )
 
-    # --- ALTERAÇÃO 7: Quadro de Datas do Início e Fim da Pesquisa ---
+    # --- Quadro de Datas do Início e Fim da Pesquisa ---
     st.markdown("<br>", unsafe_allow_html=True)
     col_d1, col_d2, col_d3 = st.columns(3)
     col_d1.metric(label="Total de Questionários", value=len(df_original))
@@ -100,10 +122,9 @@ try:
 
     st.markdown("---")
 
-    # --- ALTERAÇÃO 4: Gráfico Distribuição de Todas as Respostas Formatado ---
+    # --- Gráfico Distribuição de Todas as Respostas Formatado ---
     st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
     
-    # Mapeando rigorosamente cada resposta individual dada na planilha (valores de 1 a 5)
     contagem_respostas = df_perguntas.melt()['value'].dropna()
     
     contagem_niveis = {
@@ -119,7 +140,7 @@ try:
 
     st.markdown("---")
 
-    # --- ALTERAÇÃO 5: 8 Gráficos Pequenos por Dimensões Lado a Lado ---
+    # --- 8 Gráficos Pequenos por Dimensões Lado a Lado ---
     st.subheader("🔲 Análise Detalhada por Dimensões Ocupacionais")
     
     dimensoes = {
@@ -133,7 +154,6 @@ try:
         "Insegurança no Trabalho": colunas_perguntas[35:40]
     }
     
-    # Criando grid estruturado: 4 colunas em cima, 4 colunas embaixo
     chaves_dim = list(dimensoes.keys())
     
     # Linha 1 (Dimensões 1 a 4)
@@ -150,7 +170,6 @@ try:
             st.markdown(f"##### {nome_dim}")
             st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
             
-            # Montar mini gráfico de barras para as perguntas daquela dimensão
             df_mini = df_sub.mean().reset_index()
             df_mini.columns = ['Item', 'Média']
             st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
@@ -177,7 +196,7 @@ try:
 
     st.markdown("---")
 
-    # --- ALTERAÇÃO 6: Exibição Condicional de Textos/Planos de Ação ---
+    # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
         st.info("👉 [Substitua este texto pelo seu Plano de Ação para Risco Baixo futuramente...]")
@@ -192,5 +211,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao processar o diagnóstico: {e}")
-   
- 
