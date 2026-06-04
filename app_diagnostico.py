@@ -79,12 +79,15 @@ try:
         df_original = df_completo
         st.info("📊 Visão geral de todas as empresas.")
 
-    # Isolar colunas de perguntas (3ª à 43ª)
+    # Isolar colunas de perguntas (3ª à 43ª) garantindo uma cópia limpa e isolada
     colunas_perguntas = list(df_original.columns[2:43])
+    
+    # Criamos uma cópia explícita contendo APENAS as linhas filtradas do CNPJ
+    df_perguntas = df_original[colunas_perguntas].copy()
+    
     for col in colunas_perguntas:
-        df_original[col] = pd.to_numeric(df_original[col], errors='coerce')
+        df_perguntas[col] = pd.to_numeric(df_perguntas[col], errors='coerce')
         
-    df_perguntas = df_original[colunas_perguntas]
     media_geral = df_perguntas.mean().mean()
 
     # --- Visão Geral e Termômetro de Risco Centralizado ---
