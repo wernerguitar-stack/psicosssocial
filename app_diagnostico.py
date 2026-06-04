@@ -79,7 +79,7 @@ try:
         df_original = df_completo
         st.info("📊 Visão geral de todas as empresas.")
 
-    # Isolar colunas de perguntas (3ª à 43ª) garantindo uma cópia limpa e isolada
+ # Isolar colunas de perguntas (3ª à 43ª) garantindo uma cópia limpa e isolada
     colunas_perguntas = list(df_original.columns[2:43])
     
     # Criamos uma cópia explícita contendo APENAS as linhas filtradas do CNPJ
