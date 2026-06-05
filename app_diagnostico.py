@@ -2,90 +2,205 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 import requests
+import re
 
+# 1. Configuração da página do site
 st.set_page_config(page_title="Dashboard NR-01", layout="wide")
 
+# --- Nome do Painel ---
+st.title("📊 Dashboard de avaliação dos riscos do Psicossocial NR-01")
+
 # =========================================================================
+# ID DA SUA PLANILHA GOOGLE
 ID_DA_PLANILHA = "1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4"
 NOME_DA_ABA = "PLANILHA TÉCNICO" 
 # =========================================================================
 
-# Função para garantir que o Streamlit leia os dados novos toda vez
-@st.cache_data(ttl=0)
+nome_aba_codificado = urllib.parse.quote(NOME_DA_ABA)
+URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/{ID_DA_PLANILHA}/gviz/tq?tqx=out:csv&sheet={nome_aba_codificado}"
+
 def carregar_dados():
-    nome_aba_codificado = urllib.parse.quote(NOME_DA_ABA)
-    url = f"https://docs.google.com/spreadsheets/d/1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4/gviz/tq?tqx=out:csv&sheet=BB"
-    df = pd.read_csv(url)
+    df = pd.read_csv(URL_DIAGNOSTICO)
     df.columns = [col.strip() for col in df.columns]
     return df
 
-def buscar_nome_empresa(cnpj):
-    # Limpa o CNPJ: mantém apenas números
-    cnpj_limpo = "".join(filter(str.isdigit, str(cnpj)))
-    if not cnpj_limpo: return None
+# Busca o Nome da Empresa na ReceitaWS usando o CNPJ limpo
+def buscar_nome_empresa(cnpj_limpo):
     try:
         url = f"https://receitaws.com.br/v1/cnpj/{cnpj_limpo}"
-        resposta = requests.get(url, timeout=10)
+        resposta = requests.get(url, timeout=8)
         if resposta.status_code == 200:
-            return resposta.json().get("nome")
-    except:
+            dados_cnpj = resposta.json()
+            if dados_cnpj.get("status") == "OK":
+                return dados_cnpj.get("nome")
+    except Exception:
         pass
     return None
 
+# Classificação dos níveis de risco e suas cores
 def obter_classificacao_risco(media):
-    if media <= 1.99: return "Risco Irrelevante", "#2E7D32", "🟢"
-    elif 2.0 <= media <= 2.99: return "Risco Baixo", "#4CAF50", "🟢"
-    elif 3.0 <= media <= 3.99: return "Risco Médio", "#FF9800", "🟡"
-    elif 4.0 <= media <= 4.5: return "Risco Alto", "#E53935", "🔴"
-    else: return "Risco Crítico", "#8B0000", "🚨"
+    if media <= 1.99:
+        return "Risco Irrelevante", "#2E7D32", "🟢"
+    elif 2.0 <= media <= 2.99:
+        return "Risco Baixo", "#4CAF50", "🟢"
+    elif 3.0 <= media <= 3.99:
+        return "Risco Médio", "#FF9800", "🟡"
+    elif 4.0 <= media <= 4.5:
+        return "Risco Alto", "#E53935", "🔴"
+    else:
+        return "Risco Crítico", "#8B0000", "🚨"
 
-# --- EXECUÇÃO ---
 try:
     df_completo = carregar_dados()
     col_data = df_completo.columns[0]
-    col_cnpj = df_completo.columns[1]
+    col_cnpj = df_completo.columns[1] # Segunda coluna da planilha
     
-    # Filtro
-    cnpj_busca = st.query_params.get("cnpj", "").strip()
-    
-    if cnpj_busca:
-        # Filtra o dataframe original
-        df_original = df_completo[df_completo[col_cnpj].astype(str).str.strip() == cnpj_busca].copy()
+    # Lógica de Captura do CNPJ via URL
+    params = st.query_params
+    cnpj_via_url = params.get("cnpj", None)
+
+    if cnpj_via_url:
+        # 1. Limpa o CNPJ da URL (deixa só números)
+        cnpj_url_limpo = "".join(filter(str.isdigit, str(cnpj_via_url)))
+        
+        # 2. Cria uma coluna temporária na planilha com os CNPJs limpos (só números) para comparar
+        df_completo['cnpj_limpo_temp'] = df_completo[col_cnpj].astype(str).str.replace(r'\D', '', regex=True)
+        
+        # 3. Faz a filtragem exata baseada apenas em números
+        df_original = df_completo[df_completo['cnpj_limpo_temp'] == cnpj_url_limpo].copy()
         
         if df_original.empty:
-            st.warning(f"CNPJ {cnpj_busca} não encontrado.")
-            df_original = df_completo
+            st.warning(f"⚠️ O CNPJ '{cnpj_via_url}' não foi encontrado na base de dados. Exibindo Visão Geral.")
+            df_original = df_completo.copy()
         else:
-            nome_empresa = buscar_nome_empresa(cnpj_busca)
-            st.success(f"🏢 Empresa: {nome_empresa or 'Não identificada'} ({cnpj_busca})")
+            # Reseta o índice para isolar totalmente as linhas dessa empresa
+            df_original = df_original.reset_index(drop=True)
+            
+            # Chama a API da Receita Federal usando o CNPJ limpo
+            nome_empresa = buscar_nome_empresa(cnpj_url_limpo)
+            if nome_empresa:
+                st.success(f"🏢 Empresa Selecionada: **{nome_empresa}** ({cnpj_via_url})")
+            else:
+                st.success(f"🏢 Empresa/CNPJ Selecionado: {cnpj_via_url}")
     else:
-        df_original = df_completo
+        df_original = df_completo.copy()
         st.info("📊 Visão geral de todas as empresas.")
 
-    # Processamento dos números
-    colunas_perguntas = list(df_original.columns[2:42])
-    df_numerico = df_original[colunas_perguntas].apply(pd.to_numeric, errors='coerce')
+    # Isolar colunas de perguntas (3ª à 42ª coluna da tabela filtrada)
+    colunas_perguntas = list(df_original.columns[2:42]) 
+    df_perguntas = df_original[colunas_perguntas].copy()
     
-    # Gráfico de Distribuição Fixo
-    st.subheader("📊 Distribuição de Respostas (Filtrado)")
-    
-    # Conta apenas os valores válidos (1 a 5)
-    contagens = df_numerico.stack().value_counts().sort_index()
-    
-    # Cria o dataframe para o gráfico garantindo que todas as notas de 1 a 5 apareçam
-    df_grafico = pd.DataFrame({
-        "Nota": ["Risco Irrelevante (1)", "Risco Baixo (2)", "Risco Médio (3)", "Risco Alto (4)", "Risco Crítico (5)"],
-        "Qtd": [contagens.get(1, 0), contagens.get(2, 0), contagens.get(3, 0), contagens.get(4, 0), contagens.get(5, 0)]
-    })
-    
-    st.bar_chart(df_grafico.set_index("Nota"), color="#4B70DD")
+    for col in colunas_perguntas:
+        df_perguntas[col] = pd.to_numeric(df_perguntas[col], errors='coerce')
+        
+    media_geral = df_perguntas.mean().mean()
 
-    # Média e outros cards
-    media_geral = df_numerico.mean().mean()
+    # --- Visão Geral e Termômetro de Risco Centralizado ---
+    st.markdown("---")
+    st.subheader("📌 Visão Geral dos Riscos")
+    
     nome_risco, cor_risco, emoji_risco = obter_classificacao_risco(media_geral)
     
-    # Exibir métricas e planos (mantive a lógica que funcionou antes)
-    # ... (restante do seu código original de exibição)
+    col_vazia1, col_central, col_vazia2 = st.columns([1, 2, 1])
+    with col_central:
+        st.markdown(
+            f"""
+            <div style="background-color: {cor_risco}; padding: 25px; border-radius: 15px; text-align: center; color: white; box-shadow: 2px 4px 10px rgba(0,0,0,0.15);">
+                <h3 style="margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.85);">Classificação Geral Atual</h3>
+                <h1 style="margin: 10px 0; font-size: 45px; font-weight: bold;">{emoji_risco} {nome_risco}</h1>
+                <p style="margin: 0; font-size: 22px; font-weight: 500; color: rgba(255,255,255,0.9);">Média do Diagnóstico: {media_geral:.2f} / 5.00</p>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
 
-except Exception as e:
-    st.error(f"Erro no processamento: {e}")
+    # --- Quadro de Datas do Início e Fim da Pesquisa ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_d1, col_d2, col_d3 = st.columns(3)
+    col_d1.metric(label="Total de Questionários", value=len(df_original))
+    
+    if not df_original[col_data].isna().all():
+        data_inicio = pd.to_datetime(df_original[col_data], errors='coerce').min().strftime('%d/%m/%Y')
+        data_fim = pd.to_datetime(df_original[col_data], errors='coerce').max().strftime('%d/%m/%Y')
+        col_d2.metric(label="📅 Início da Pesquisa", value=data_inicio)
+        col_d3.metric(label="📅 Término da Pesquisa", value=data_fim)
+    else:
+        col_d2.metric(label="📅 Início da Pesquisa", value="Sem dados")
+        col_d3.metric(label="📅 Término da Pesquisa", value="Sem dados")
+
+    st.markdown("---")
+
+    # --- Gráfico Distribuição de Respostas Super Protegido ---
+    st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
+    
+    contagem_niveis = {
+        "Risco Irrelevante (1)": 0,
+        "Risco Baixo (2)": 0,
+        "Risco Médio (3)": 0,
+        "Risco Alto (4)": 0,
+        "Risco Crítico (5)": 0
+    }
+    
+    # Varre apenas a tabela purificada df_perguntas
+    for col in colunas_perguntas:
+        contagem_niveis["Risco Irrelevante (1)"] += int((df_perguntas[col] == 1).sum())
+        contagem_niveis["Risco Baixo (2)"] += int((df_perguntas[col] == 2).sum())
+        contagem_niveis["Risco Médio (3)"] += int((df_perguntas[col] == 3).sum())
+        contagem_niveis["Risco Alto (4)"] += int((df_perguntas[col] == 4).sum())
+        contagem_niveis["Risco Crítico (5)"] += int((df_perguntas[col] == 5).sum())
+    
+    df_dist_novo = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
+    st.bar_chart(data=df_dist_novo, x='Nível de Risco', y='Quantidade de Respostas', color="#4B70DD")
+
+    st.markdown("---")
+
+    # --- 8 Gráficos Pequenos por Dimensões Lado a Lado ---
+    st.subheader("🔲 Análise Detalhada por Dimensões Ocupacionais")
+    
+    dimensoes = {
+        "Demandas de Trabalho": colunas_perguntas[0:5],
+        "Controle sobre o Trabalho": colunas_perguntas[5:10],
+        "Suporte Social no Trabalho": colunas_perguntas[10:15],
+        "Relações Interpessoais e Liderança": colunas_perguntas[15:20],
+        "Reconhecimento e Recompensas": colunas_perguntas[20:25],
+        "Danos Morais e Assedio": colunas_perguntas[25:30],
+        "Equilibrio Trabalho - Vida Pessoal": colunas_perguntas[30:35],
+        "Insegurança no Trabalho": colunas_perguntas[35:40]
+    }
+    
+    chaves_dim = list(dimensoes.keys())
+    
+    # Linha 1 (Dimensões 1 a 4)
+    cols_linha1 = st.columns(4)
+    for idx in range(4):
+        nome_dim = chaves_dim[idx]
+        cols_dim = dimensoes[nome_dim]
+        df_sub = df_perguntas[cols_dim]
+        media_dim = df_sub.mean().mean()
+        
+        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
+        
+        with cols_linha1[idx]:
+            st.markdown(f"##### {nome_dim}")
+            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
+            
+            df_mini = df_sub.mean().reset_index()
+            df_mini.columns = ['Item', 'Média']
+            st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+    # Linha 2 (Dimensões 5 a 8)
+    cols_linha2 = st.columns(4)
+    for idx in range(4, 8):
+        nome_dim = chaves_dim[idx]
+        cols_dim = dimensoes[nome_dim]
+        df_sub = df_perguntas[cols_dim]
+        media_dim = df_sub.mean().mean()
+        
+        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
+        
+        with cols_linha2[idx - 4]:
+            st.markdown(f"##### {nome_dim}")
+            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
+            
+            df_mini = df_sub.mean().reset_index
