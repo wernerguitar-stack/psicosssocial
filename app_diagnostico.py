@@ -195,46 +195,51 @@ try:
 
     st.markdown("---")
 
-    # --- Exibição Condicional de Textos/Planos de Ação ---
+   # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
-        st.info("1. Demandas de Trabalho
-(Carga de trabalho, prazos, volume e urgências)
--Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
-        2. Controle sobre o Trabalho
-(Autonomia, participação e organização das atividades).
--Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
-3. Suporte Social no Trabalho
-(Apoio entre equipes, cooperação e integração).
--Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
-4. Relações Interpessoais e Liderança
-(Comunicação, feedback e gestão de conflitos).
--Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
-5. Reconhecimento e Recompensas
-(Valorização profissional e percepção de reconhecimento).
--Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
-6. Danos Morais e Assédio
-(Condutas inadequadas, constrangimentos e ambiente ético).
--Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
-    7. Equilíbrio Trabalho–Vida Pessoal
-(Rotina, pausas e qualidade de vida).
--Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
-    8. Insegurança no Trabalho
-(Incertezas, estabilidade e mudanças organizacionais).
--Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
-")
-        
+        st.info("""
+        1. **Demandas de Trabalho**  
+        (Carga de trabalho, prazos, volume e urgências)  
+        - Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
+
+        2. **Controle sobre o Trabalho**  
+        (Autonomia, participação e organização das atividades)  
+        - Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
+
+        3. **Suporte Social no Trabalho**  
+        (Apoio entre equipes, cooperação e integração)  
+        - Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
+
+        4. **Relações Interpessoais e Liderança**  
+        (Comunicação, feedback e gestão de conflitos)  
+        - Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
+
+        5. **Reconhecimento e Recompensas**  
+        (Valorização profissional e percepção de reconhecimento)  
+        - Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
+
+        6. **Danos Morais e Assédio**  
+        (Condutas inadequadas, constrangimentos e ambiente ético)  
+        - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
+
+        7. **Equilíbrio Trabalho–Vida Pessoal**  
+        (Rotina, pausas e qualidade de vida)  
+        - Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
+
+        8. **Insegurança no Trabalho**  
+        (Incertezas, estabilidade e mudanças organizacionais)  
+        - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
+        """)
+
     elif "Médio" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Médio")
         st.warning("👉 [Substitua este texto pelo seu Plano de Ação para Risco Médio futuramente...]")
-        
+
     elif "Alto" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
         st.error("👉 [Substitua este texto pelo seu Plano de Ação para Risco Alto futuramente...]")
 
 except Exception as e:
     st.error(f"Erro ao processar o diagnóstico: {e}")
-
-
-     
       
