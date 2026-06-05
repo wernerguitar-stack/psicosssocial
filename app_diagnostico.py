@@ -261,33 +261,57 @@ try:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Médio")
         st.info("""
 1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
-- Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
+- Treinamentos específicos sobre gestão de demandas, organização operacional, priorização de atividades e prevenção do estresse relacionado ao trabalho.
 
 2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
-- Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
+- Treinamentos específicos sobre autonomia, clareza de função, organização operacional e melhoria dos processos internos.
 
 3. **Suporte Social no Trabalho** (Apoio entre equipes, cooperação e integração)  
-- Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
+- Treinamentos voltados à comunicação interna, cooperação entre equipes e fortalecimento do suporte social no ambiente de trabalho.
 
 4. **Relações Interpessoais e Liderança** (Comunicação, feedback e gestão de conflitos)  
-- Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
+- Treinamentos específicos para liderança e equipes sobre feedback, alinhamento de comunicação, prevenção de conflitos e fortalecimento das relações profissionais.
 
 5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
-- Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
+- Treinamentos direcionados às lideranças sobre práticas de reconhecimento, valorização profissional e retenção de talentos.
 
 6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
-- Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
+- Treinamentos específicos sobre políticas internas, prevenção ao assédio, comunicação ética e fortalecimento das boas práticas organizacionais.
 
 7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
-- Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
+- Treinamentos educativos sobre equilíbrio ocupacional, prevenção do desgaste emocional e incentivo a práticas saudáveis relacionadas ao bem-estar.
 
 8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
-- Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
+- Treinamentos voltados à transparência organizacional, alinhamento de expectativas profissionais e fortalecimento da comunicação interna.
 """)
 
     elif "Alto" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
-        st.error("👉 [Substitua este texto pelo seu Plano de Ação para Risco Alto futuramente...]")
+       st.info("""
+1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
+- Necessidade de acompanhamento mais próximo e estruturado, com mentoria presencial para liderança, reorganização operacional, redistribuição de demandas e desenvolvimento de estratégias práticas de redução do risco psicossocial.
+
+2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
+- Necessidade de mentoria presencial para liderança e reestruturação organizacional, visando fortalecimento da autonomia funcional, alinhamento de funções e melhoria dos processos internos.
+
+3. **Suporte Social no Trabalho** (Apoio entre equipes, cooperação e integração)  
+- Necessidade de workshops e mentoria presencial voltados à melhoria da comunicação interpessoal, fortalecimento da cultura colaborativa e desenvolvimento das equipes.
+
+4. **Relações Interpessoais e Liderança** (Comunicação, feedback e gestão de conflitos)  
+- Necessidade de mentoria presencial para liderança, gestão de conflitos, fortalecimento de engajamento e melhoria das relações interpessoais no ambiente organizacional.
+
+5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
+- Necessidade de mentoria presencial para implementação de estratégias de reconhecimento, fortalecimento da motivação organizacional e retenção de talentos.
+
+6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
+- Necessidade de palestras, acompanhamento presencial, fortalecimento de canais internos e mentoria especializada para prevenção e manejo das situações identificadas.
+
+7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
+- Necessidade de workshops presenciais, acompanhamento especializado e mentoria voltada ao manejo emocional, prevenção do adoecimento ocupacional e fortalecimento do bem-estar no ambiente de trabalho.
+
+8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
+- Necessidade de mentoria presencial para liderança, alinhamento organizacional, fortalecimento da segurança psicológica e acompanhamento estruturado das mudanças organizacionais.
+""")
 
 except Exception as e:
     st.error(f"Erro ao processar o diagnóstico: {e}")
