@@ -15,8 +15,8 @@ ID_DA_PLANILHA = "1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4"
 NOME_DA_ABA = "PLANILHA TÉCNICO" 
 # =========================================================================
 
-nome_aba_codificado = urllib.parse.quote(NOME_DA_ABA)
-URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/{ID_DA_PLANILHA}/gviz/tq?tqx=out:csv&sheet={nome_aba_codificado}"
+nome_aba_codificado = urllib.parse.quoteBB
+URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4/gviz/tq?tqx=out:csv&sheet=BB"
 
 def carregar_dados():
     df = pd.read_csv(URL_DIAGNOSTICO)
@@ -61,13 +61,16 @@ try:
     cnpj_via_url = params.get("cnpj", None)
 
     if cnpj_via_url:
+        # Filtra a planilha criando uma cópia isolada para evitar heranças indesejadas
         df_original = df_completo[df_completo[col_cnpj].astype(str).str.strip() == str(cnpj_via_url).strip()].copy()
         
         if df_original.empty:
             st.warning(f"⚠️ O CNPJ '{cnpj_via_url}' não foi encontrado. Exibindo dados gerais.")
             df_original = df_completo.copy()
         else:
+            # Reseta o índice para blindar as contagens e gráficos do resto da planilha
             df_original = df_original.reset_index(drop=True)
+            
             nome_empresa = buscar_nome_empresa(cnpj_via_url)
             if nome_empresa:
                 st.success(f"🏢 Empresa Selecionada: **{nome_empresa}** ({cnpj_via_url})")
@@ -78,7 +81,7 @@ try:
         st.info("📊 Visão geral de todas as empresas.")
 
     # Isolar colunas de perguntas (3ª à 42ª) garantindo isolamento total
-    colunas_perguntas = list(df_original.columns[2:42])
+    colunas_perguntas = list(df_original.columns[2:42]) 
     df_perguntas = df_original[colunas_perguntas].copy()
     
     for col in colunas_perguntas:
@@ -121,17 +124,20 @@ try:
 
     st.markdown("---")
 
-    # --- Gráfico Distribuição Filtrado Corretamente ---
+    # --- Gráfico Distribuição FILTRADO CORRETAMENTE (Nova lógica sem Melt) ---
     st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
     
-    contagem_respostas = df_perguntas.melt()['value'].dropna()
+    # Transformamos todos os valores numéricos da sub-tabela filtrada em uma série única
+    todas_as_notas = df_perguntas.values.flatten()
+    serie_notas = pd.Series(todas_as_notas).dropna()
     
+    # Contamos de forma limpa e direta quantas vezes cada nota (1 a 5) aparece nas linhas filtradas
     contagem_niveis = {
-        "Risco Irrelevante (1)": len(contagem_respostas[contagem_respostas == 1]),
-        "Risco Baixo (2)": len(contagem_respostas[contagem_respostas == 2]),
-        "Risco Médio (3)": len(contagem_respostas[contagem_respostas == 3]),
-        "Risco Alto (4)": len(contagem_respostas[contagem_respostas == 4]),
-        "Risco Crítico (5)": len(contagem_respostas[contagem_respostas == 5])
+        "Risco Irrelevante (1)": int((serie_notas == 1).sum()),
+        "Risco Baixo (2)": int((serie_notas == 2).sum()),
+        "Risco Médio (3)": int((serie_notas == 3).sum()),
+        "Risco Alto (4)": int((serie_notas == 4).sum()),
+        "Risco Crítico (5)": int((serie_notas == 5).sum())
     }
     
     df_dist_novo = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
@@ -195,40 +201,32 @@ try:
 
     st.markdown("---")
 
-   # --- Exibição Condicional de Textos/Planos de Ação ---
+    # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
         st.info("""
-        1. **Demandas de Trabalho**  
-        (Carga de trabalho, prazos, volume e urgências)  
+        1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
         - Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
 
-        2. **Controle sobre o Trabalho**  
-        (Autonomia, participação e organização das atividades)  
+        2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
         - Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
 
-        3. **Suporte Social no Trabalho**  
-        (Apoio entre equipes, cooperação e integração)  
+        3. **Suporte Social no Trabalho** (Apoio entre equipes, cooperação e integração)  
         - Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
 
-        4. **Relações Interpessoais e Liderança**  
-        (Comunicação, feedback e gestão de conflitos)  
+        4. **Relações Interpessoais e Liderança** (Comunicação, feedback e gestão de conflitos)  
         - Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
 
-        5. **Reconhecimento e Recompensas**  
-        (Valorização profissional e percepção de reconhecimento)  
+        5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
         - Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
 
-        6. **Danos Morais e Assédio**  
-        (Condutas inadequadas, constrangimentos e ambiente ético)  
+        6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
         - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
 
-        7. **Equilíbrio Trabalho–Vida Pessoal**  
-        (Rotina, pausas e qualidade de vida)  
+        7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
         - Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
 
-        8. **Insegurança no Trabalho**  
-        (Incertezas, estabilidade e mudanças organizacionais)  
+        8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
         - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
         """)
 
@@ -242,4 +240,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao processar o diagnóstico: {e}")
-      
