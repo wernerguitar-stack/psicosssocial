@@ -15,7 +15,7 @@ ID_DA_PLANILHA = "1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4"
 NOME_DA_ABA = "PLANILHA TÉCNICO" 
 # =========================================================================
 
-nome_aba_codificado = urllib.parse.quoteBB
+nome_aba_codificado = urllib.parse.quote(BB)
 URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/1klYEryQRKGUjTN7XOHf9fqprRQTqcYUcEIu0TIfQtc4/gviz/tq?tqx=out:csv&sheet=BB"
 
 def carregar_dados():
