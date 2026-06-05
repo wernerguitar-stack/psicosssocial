@@ -183,4 +183,87 @@ try:
         "Reconhecimento e Recompensas": colunas_perguntas[20:25],
         "Danos Morais e Assedio": colunas_perguntas[25:30],
         "Equilibrio Trabalho - Vida Pessoal": colunas_perguntas[30:35],
-        "Insegurança no Trabalho": colunas_
+        "Insegurança no Trabalho": colunas_perguntas[35:40]
+    }
+    
+    chaves_dim = list(dimensoes.keys())
+    
+    # Linha 1 (Dimensões 1 a 4)
+    cols_linha1 = st.columns(4)
+    for idx in range(4):
+        nome_dim = chaves_dim[idx]
+        cols_dim = dimensoes[nome_dim]
+        df_sub = df_perguntas[cols_dim]
+        media_dim = df_sub.mean().mean()
+        
+        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
+        
+        with cols_linha1[idx]:
+            st.markdown(f"##### {nome_dim}")
+            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
+            
+            df_mini = df_sub.mean().reset_index()
+            df_mini.columns = ['Item', 'Média']
+            st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+    # Linha 2 (Dimensões 5 a 8)
+    cols_linha2 = st.columns(4)
+    for idx in range(4, 8):
+        nome_dim = chaves_dim[idx]
+        cols_dim = dimensoes[nome_dim]
+        df_sub = df_perguntas[cols_dim]
+        media_dim = df_sub.mean().mean()
+        
+        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
+        
+        with cols_linha2[idx - 4]:
+            st.markdown(f"##### {nome_dim}")
+            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
+            
+            df_mini = df_sub.mean().reset_index()
+            df_mini.columns = ['Item', 'Média']
+            st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # --- Exibição Condicional de Textos/Planos de Ação ---
+    if "Baixo" in nome_risco:
+        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
+        st.info("""
+1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
+- Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
+
+2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
+- Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
+
+3. **Suporte Social no Trabalho** (Apoio entre equipes, cooperação e integração)  
+- Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
+
+4. **Relações Interpessoais e Liderança** (Comunicação, feedback e gestão de conflitos)  
+- Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
+
+5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
+- Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
+
+6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
+- Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
+
+7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
+- Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
+
+8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
+- Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
+""")
+
+    elif "Médio" in nome_risco:
+        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Médio")
+        st.warning("👉 [Substitua este texto pelo seu Plano de Ação para Risco Médio futuramente...]")
+
+    elif "Alto" in nome_risco:
+        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
+        st.error("👉 [Substitua este texto pelo seu Plano de Ação para Risco Alto futuramente...]")
+
+except Exception as e:
+    st.error(f"Erro ao processar o diagnóstico: {e}")
