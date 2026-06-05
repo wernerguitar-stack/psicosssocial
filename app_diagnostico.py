@@ -130,27 +130,22 @@ try:
 
     st.markdown("---")
 
-    # --- Gráfico Distribuição de Respostas Super Protegido ---
-    st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
+    # --- NOVO GRÁFICO: DISTRIBUIÇÃO POR QUESTIONÁRIOS (LINHAS) ---
+    st.subheader("📊 Quantidade de Funcionários por Nível de Risco")
     
-    contagem_niveis = {
-        "Risco Irrelevante (1)": 0,
-        "Risco Baixo (2)": 0,
-        "Risco Médio (3)": 0,
-        "Risco Alto (4)": 0,
-        "Risco Crítico (5)": 0
+    # Calcula a média horizontal de cada linha (cada funcionário individualmente)
+    medias_por_funcionario = df_perguntas.mean(axis=1)
+    
+    contagem_funcionarios = {
+        "Risco Irrelevante (<=1.99)": int((medias_por_funcionario <= 1.99).sum()),
+        "Risco Baixo (2.0 a 2.99)": int(((medias_por_funcionario >= 2.0) & (medias_por_funcionario <= 2.99)).sum()),
+        "Risco Médio (3.0 a 3.99)": int(((medias_por_funcionario >= 3.0) & (medias_por_funcionario <= 3.99)).sum()),
+        "Risco Alto (4.0 a 4.5)": int(((medias_por_funcionario >= 4.0) & (medias_por_funcionario <= 4.5)).sum()),
+        "Risco Crítico (>4.5)": int((medias_por_funcionario > 4.5).sum())
     }
     
-    # Varre apenas a tabela purificada df_perguntas
-    for col in colunas_perguntas:
-        contagem_niveis["Risco Irrelevante (1)"] += int((df_perguntas[col] == 1).sum())
-        contagem_niveis["Risco Baixo (2)"] += int((df_perguntas[col] == 2).sum())
-        contagem_niveis["Risco Médio (3)"] += int((df_perguntas[col] == 3).sum())
-        contagem_niveis["Risco Alto (4)"] += int((df_perguntas[col] == 4).sum())
-        contagem_niveis["Risco Crítico (5)"] += int((df_perguntas[col] == 5).sum())
-    
-    df_dist_novo = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
-    st.bar_chart(data=df_dist_novo, x='Nível de Risco', y='Quantidade de Respostas', color="#4B70DD")
+    df_dist_linhas = pd.DataFrame(list(contagem_funcionarios.items()), columns=['Nível de Risco', 'Quantidade de Funcionários'])
+    st.bar_chart(data=df_dist_linhas, x='Nível de Risco', y='Quantidade de Funcionários', color="#4B70DD")
 
     st.markdown("---")
 
@@ -232,7 +227,7 @@ try:
 6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
 - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
 
-7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
+7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e quality de vida)  
 - Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
 
 8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
