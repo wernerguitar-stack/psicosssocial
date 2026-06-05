@@ -287,7 +287,7 @@ try:
 
     elif "Alto" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
-       st.info("""
+        st.info("""
 1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
 - Necessidade de acompanhamento mais próximo e estruturado, com mentoria presencial para liderança, reorganização operacional, redistribuição de demandas e desenvolvimento de estratégias práticas de redução do risco psicossocial.
 
