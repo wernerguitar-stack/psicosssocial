@@ -20,6 +20,8 @@ URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/1klYEryQRKGUjTN7XOHf9
 
 def carregar_dados():
     df = pd.read_csv(URL_DIAGNOSTICO)
+    # Garante que os nomes das colunas não tenham espaços extras
+    df.columns = [col.strip() for col in df.columns]
     coluna_data = df.columns[0]
     df[coluna_data] = pd.to_datetime(df[coluna_data], errors='coerce')
     return df
@@ -60,17 +62,17 @@ try:
     params = st.query_params
     cnpj_via_url = params.get("cnpj", None)
 
+    # 🚨 ESTRATÉGIA DE FILTRO AGRESSIVO: Criamos uma tabela limpa do zero
     if cnpj_via_url:
-        # Filtra a planilha criando uma cópia isolada para evitar heranças indesejadas
-        df_original = df_completo[df_completo[col_cnpj].astype(str).str.strip() == str(cnpj_via_url).strip()].copy()
+        cnpj_busca = str(cnpj_via_url).strip()
+        # Filtra convertendo ambos para string e removendo espaços
+        df_filtrado_cnpj = df_completo[df_completo[col_cnpj].astype(str).str.strip() == cnpj_busca].copy()
         
-        if df_original.empty:
+        if df_filtrado_cnpj.empty:
             st.warning(f"⚠️ O CNPJ '{cnpj_via_url}' não foi encontrado. Exibindo dados gerais.")
             df_original = df_completo.copy()
         else:
-            # Reseta o índice para blindar as contagens e gráficos do resto da planilha
-            df_original = df_original.reset_index(drop=True)
-            
+            df_original = df_filtrado_cnpj.reset_index(drop=True)
             nome_empresa = buscar_nome_empresa(cnpj_via_url)
             if nome_empresa:
                 st.success(f"🏢 Empresa Selecionada: **{nome_empresa}** ({cnpj_via_url})")
@@ -80,14 +82,15 @@ try:
         df_original = df_completo.copy()
         st.info("📊 Visão geral de todas as empresas.")
 
-    # Isolar colunas de perguntas (3ª à 42ª) garantindo isolamento total
+    # Isolar estritamente as 40 perguntas da tabela que JÁ FOI FILTRADA por CNPJ
     colunas_perguntas = list(df_original.columns[2:42]) 
-    df_perguntas = df_original[colunas_perguntas].copy()
     
+    # Criamos um DataFrame totalmente novo contendo APENAS os números das respostas
+    df_apenas_respostas = pd.DataFrame()
     for col in colunas_perguntas:
-        df_perguntas[col] = pd.to_numeric(df_perguntas[col], errors='coerce')
+        df_apenas_respostas[col] = pd.to_numeric(df_original[col], errors='coerce')
         
-    media_geral = df_perguntas.mean().mean()
+    media_geral = df_apenas_respostas.mean().mean()
 
     # --- Visão Geral e Termômetro de Risco Centralizado ---
     st.markdown("---")
@@ -111,7 +114,7 @@ try:
     # --- Quadro de Datas do Início e Fim da Pesquisa ---
     st.markdown("<br>", unsafe_allow_html=True)
     col_d1, col_d2, col_d3 = st.columns(3)
-    col_d1.metric(label="Total de Questionários", value=len(df_original))
+    col_d1.metric(label="Total de Questionários Desta Empresa", value=len(df_original))
     
     if not df_original[col_data].isna().all():
         data_inicio = df_original[col_data].min().strftime('%d/%m/%Y')
@@ -124,28 +127,25 @@ try:
 
     st.markdown("---")
 
-    # --- Gráfico Distribuição FILTRADO CORRETAMENTE (Nova lógica ultra segura) ---
-    st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
+    # --- NOVO GRÁFICO DE DISTRIBUIÇÃO REESCRITO DO ZERO ---
+    st.subheader("📊 Quantidade de Respostas por Nível de Risco (Exclusivo desta Consulta)")
     
-    # Criamos um dicionário para somar manualmente a quantidade de notas encontradas apenas na tabela filtrada
+    # Pegamos todas as notas dadas nas colunas de perguntas e juntamos em uma lista gigante
+    lista_de_todas_as_notas = []
+    for col in df_apenas_respostas.columns:
+        lista_de_todas_as_notas.extend(df_apenas_respostas[col].dropna().tolist())
+    
+    # Contamos estritamente quantas vezes cada número de 1 a 5 aparece nessa lista isolada
     contagem_niveis = {
-        "Risco Irrelevante (1)": 0,
-        "Risco Baixo (2)": 0,
-        "Risco Médio (3)": 0,
-        "Risco Alto (4)": 0,
-        "Risco Crítico (5)": 0
+        "Risco Irrelevante (1)": lista_de_todas_as_notas.count(1),
+        "Risco Baixo (2)": lista_de_todas_as_notas.count(2),
+        "Risco Médio (3)": lista_de_todas_as_notas.count(3),
+        "Risco Alto (4)": lista_de_todas_as_notas.count(4),
+        "Risco Crítico (5)": lista_de_todas_as_notas.count(5)
     }
     
-    # Contamos de forma direta coluna por coluna dentro do bloco isolado do CNPJ
-    for col in colunas_perguntas:
-        contagem_niveis["Risco Irrelevante (1)"] += int((df_perguntas[col] == 1).sum())
-        contagem_niveis["Risco Baixo (2)"] += int((df_perguntas[col] == 2).sum())
-        contagem_niveis["Risco Médio (3)"] += int((df_perguntas[col] == 3).sum())
-        contagem_niveis["Risco Alto (4)"] += int((df_perguntas[col] == 4).sum())
-        contagem_niveis["Risco Crítico (5)"] += int((df_perguntas[col] == 5).sum())
-    
-    df_dist_novo = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
-    st.bar_chart(data=df_dist_novo, x='Nível de Risco', y='Quantidade de Respostas', color="#4B70DD")
+    df_novo_grafico = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
+    st.bar_chart(data=df_novo_grafico, x='Nível de Risco', y='Quantidade de Respostas', color="#4B70DD")
 
     st.markdown("---")
 
@@ -170,7 +170,7 @@ try:
     for idx in range(4):
         nome_dim = chaves_dim[idx]
         cols_dim = dimensoes[nome_dim]
-        df_sub = df_perguntas[cols_dim]
+        df_sub = df_apenas_respostas[cols_dim]
         media_dim = df_sub.mean().mean()
         
         r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
@@ -189,7 +189,7 @@ try:
     for idx in range(4, 8):
         nome_dim = chaves_dim[idx]
         cols_dim = dimensoes[nome_dim]
-        df_sub = df_perguntas[cols_dim]
+        df_sub = df_apenas_respostas[cols_dim]
         media_dim = df_sub.mean().mean()
         
         r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
@@ -222,7 +222,7 @@ try:
         - Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
 
         5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
-        - Treinamentos sobre cultura organizational, reconhecimento profissional e valorização das equipes.
+        - Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
 
         6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
         - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
@@ -231,7 +231,7 @@ try:
         - Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
 
         8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
-        - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
+        - Treinamentos sobre administração de mudanças organizacionais e comunicação corporativa.
         """)
 
     elif "Médio" in nome_risco:
