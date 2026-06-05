@@ -93,7 +93,13 @@ try:
     for col in colunas_perguntas:
         df_perguntas[col] = pd.to_numeric(df_perguntas[col], errors='coerce')
         
+    # Cálculos das Médias Gerais e por Pergunta
     media_geral = df_perguntas.mean().mean()
+    
+    # Calcula a média individual de cada uma das 40 perguntas
+    medias_por_pergunta = df_perguntas.mean()
+    menor_media_resposta = medias_por_pergunta.min()
+    maior_media_resposta = medias_por_pergunta.max()
 
     # --- Visão Geral e Termômetro de Risco Centralizado ---
     st.markdown("---")
@@ -114,7 +120,7 @@ try:
             unsafe_allow_html=True
         )
 
-    # --- Quadro de Datas do Início e Fim da Pesquisa ---
+    # --- Quadro de Informações Principais ---
     st.markdown("<br>", unsafe_allow_html=True)
     col_d1, col_d2, col_d3 = st.columns(3)
     col_d1.metric(label="Total de Questionários", value=len(df_original))
@@ -127,6 +133,23 @@ try:
     else:
         col_d2.metric(label="📅 Início da Pesquisa", value="Sem dados")
         col_d3.metric(label="📅 Término da Pesquisa", value="Sem dados")
+
+    # --- Nova Linha de Cartões: Menor e Maior Média ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_inf1, col_inf2 = st.columns(2)
+    
+    # Descobre os emojis de classificação para as extremidades
+    _, _, emoji_menor = obter_classificacao_risco(menor_media_resposta)
+    _, _, emoji_maior = obter_classificacao_risco(maior_media_resposta)
+    
+    col_inf1.metric(
+        label="📉 Menor Média Encontrada (Item de Menor Risco)", 
+        value=f"{emoji_menor} {menor_media_resposta:.2f} / 5.00"
+    )
+    col_inf2.metric(
+        label="📈 Maior Média Encontrada (Item Crítico / Maior Risco)", 
+        value=f"{emoji_maior} {maior_media_resposta:.2f} / 5.00"
+    )
 
     st.markdown("---")
 
@@ -160,87 +183,4 @@ try:
         "Reconhecimento e Recompensas": colunas_perguntas[20:25],
         "Danos Morais e Assedio": colunas_perguntas[25:30],
         "Equilibrio Trabalho - Vida Pessoal": colunas_perguntas[30:35],
-        "Insegurança no Trabalho": colunas_perguntas[35:40]
-    }
-    
-    chaves_dim = list(dimensoes.keys())
-    
-    # Linha 1 (Dimensões 1 a 4)
-    cols_linha1 = st.columns(4)
-    for idx in range(4):
-        nome_dim = chaves_dim[idx]
-        cols_dim = dimensoes[nome_dim]
-        df_sub = df_perguntas[cols_dim]
-        media_dim = df_sub.mean().mean()
-        
-        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
-        
-        with cols_linha1[idx]:
-            st.markdown(f"##### {nome_dim}")
-            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
-            
-            df_mini = df_sub.mean().reset_index()
-            df_mini.columns = ['Item', 'Média']
-            st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
-            st.markdown("<br>", unsafe_allow_html=True)
-
-    # Linha 2 (Dimensões 5 a 8)
-    cols_linha2 = st.columns(4)
-    for idx in range(4, 8):
-        nome_dim = chaves_dim[idx]
-        cols_dim = dimensoes[nome_dim]
-        df_sub = df_perguntas[cols_dim]
-        media_dim = df_sub.mean().mean()
-        
-        r_nome, r_cor, r_emoji = obter_classificacao_risco(media_dim)
-        
-        with cols_linha2[idx - 4]:
-            st.markdown(f"##### {nome_dim}")
-            st.markdown(f"<span style='color:{r_cor}; font-weight:bold;'>{r_emoji} {r_nome} ({media_dim:.2f})</span>", unsafe_allow_html=True)
-            
-            df_mini = df_sub.mean().reset_index()
-            df_mini.columns = ['Item', 'Média']
-            st.bar_chart(data=df_mini, x='Item', y='Média', color=r_cor)
-            st.markdown("<br>", unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    # --- Exibição Condicional de Textos/Planos de Ação ---
-    if "Baixo" in nome_risco:
-        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
-        st.info("""
-1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
-- Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
-
-2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
-- Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
-
-3. **Suporte Social no Trabalho** (Apoio entre equipes, cooperação e integração)  
-- Treinamentos sobre relações interpessoais, integração e fortalecimento do trabalho em equipe.
-
-4. **Relações Interpessoais e Liderança** (Comunicação, feedback e gestão de conflitos)  
-- Treinamentos sobre comunicação assertiva, inteligência emocional e relacionamento interpessoal.
-
-5. **Reconhecimento e Recompensas** (Valorização profissional e percepção de reconhecimento)  
-- Treinamentos sobre cultura organizacional, reconhecimento profissional e valorização das equipes.
-
-6. **Danos Morais e Assédio** (Condutas inadequadas, constrangimentos e ambiente ético)  
-- Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
-
-7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e quality de vida)  
-- Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
-
-8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
-- Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
-""")
-
-    elif "Médio" in nome_risco:
-        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Médio")
-        st.warning("👉 [Substitua este texto pelo seu Plano de Ação para Risco Médio futuramente...]")
-
-    elif "Alto" in nome_risco:
-        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
-        st.error("👉 [Substitua este texto pelo seu Plano de Ação para Risco Alto futuramente...]")
-
-except Exception as e:
-    st.error(f"Erro ao processar o diagnóstico: {e}")
+        "Insegurança no Trabalho": colunas_
