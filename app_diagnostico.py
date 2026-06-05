@@ -124,21 +124,25 @@ try:
 
     st.markdown("---")
 
-    # --- Gráfico Distribuição FILTRADO CORRETAMENTE (Nova lógica sem Melt) ---
+    # --- Gráfico Distribuição FILTRADO CORRETAMENTE (Nova lógica ultra segura) ---
     st.subheader("📊 Distribuição de Todas as Respostas por Nível de Risco")
     
-    # Transformamos todos os valores numéricos da sub-tabela filtrada em uma série única
-    todas_as_notas = df_perguntas.values.flatten()
-    serie_notas = pd.Series(todas_as_notas).dropna()
-    
-    # Contamos de forma limpa e direta quantas vezes cada nota (1 a 5) aparece nas linhas filtradas
+    # Criamos um dicionário para somar manualmente a quantidade de notas encontradas apenas na tabela filtrada
     contagem_niveis = {
-        "Risco Irrelevante (1)": int((serie_notas == 1).sum()),
-        "Risco Baixo (2)": int((serie_notas == 2).sum()),
-        "Risco Médio (3)": int((serie_notas == 3).sum()),
-        "Risco Alto (4)": int((serie_notas == 4).sum()),
-        "Risco Crítico (5)": int((serie_notas == 5).sum())
+        "Risco Irrelevante (1)": 0,
+        "Risco Baixo (2)": 0,
+        "Risco Médio (3)": 0,
+        "Risco Alto (4)": 0,
+        "Risco Crítico (5)": 0
     }
+    
+    # Contamos de forma direta coluna por coluna dentro do bloco isolado do CNPJ
+    for col in colunas_perguntas:
+        contagem_niveis["Risco Irrelevante (1)"] += int((df_perguntas[col] == 1).sum())
+        contagem_niveis["Risco Baixo (2)"] += int((df_perguntas[col] == 2).sum())
+        contagem_niveis["Risco Médio (3)"] += int((df_perguntas[col] == 3).sum())
+        contagem_niveis["Risco Alto (4)"] += int((df_perguntas[col] == 4).sum())
+        contagem_niveis["Risco Crítico (5)"] += int((df_perguntas[col] == 5).sum())
     
     df_dist_novo = pd.DataFrame(list(contagem_niveis.items()), columns=['Nível de Risco', 'Quantidade de Respostas'])
     st.bar_chart(data=df_dist_novo, x='Nível de Risco', y='Quantidade de Respostas', color="#4B70DD")
@@ -206,7 +210,7 @@ try:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
         st.info("""
         1. **Demandas de Trabalho** (Carga de trabalho, prazos, volume e urgências)  
-        - Treinamentos voltados à gestão do tempo, organização de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
+        - Treinamentos voltados à gestão do tempo, organization de tarefas, produtividade saudável e prevenção de sobrecarga ocupacional.
 
         2. **Controle sobre o Trabalho** (Autonomia, participação e organização das atividades)  
         - Treinamentos voltados à autogestão, autonomia funcional e organização da rotina de trabalho.
@@ -224,19 +228,4 @@ try:
         - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
 
         7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
-        - Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
-
-        8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
-        - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
-        """)
-
-    elif "Médio" in nome_risco:
-        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Médio")
-        st.warning("👉 [Substitua este texto pelo seu Plano de Ação para Risco Médio futuramente...]")
-
-    elif "Alto" in nome_risco:
-        st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Alto")
-        st.error("👉 [Substitua este texto pelo seu Plano de Ação para Risco Alto futuramente...]")
-
-except Exception as e:
-    st.error(f"Erro ao processar o diagnóstico: {e}")
+        - Treinamentos sobre gestão do tempo, qualidade de vida, saúde
