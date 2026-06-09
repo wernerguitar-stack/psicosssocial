@@ -247,12 +247,14 @@ try:
     O método aplicado tem como objetivo identificar possíveis situações estressoras no ambiente de trabalho, por meio da coleta estruturada de informações junto à empresa, aos trabalhadores e de visitas de campo. 
     
     O **COPSOQ II** é um instrumento multidimensional com consenso internacional quanto à sua validade, abrangência e aplicabilidade na avaliação de riscos psicossociais em contexto laboral. A versão adaptada utilizada nesta metodologia contempla 40 itens, derivados da versão curta do COPSOQ II, organizados em múltiplas dimensões que abrangem:
-    1. Exigências Laborais
-    2. Organização do Trabalho e Conteúdo
-    3. Relações Sociais e Liderança
-    4. Interface Trabalho-Indivíduo
-    5. Valores no Local de Trabalho
-    6. Saúde e Bem-Estar
+    1. Demandas de Trabalho
+    2. Controle sobre o Trabalho
+    3. Suporte Social no Trabalho
+    4. Relações Interpessoais e Liderança
+    5. Reconhecimento e Recompensas
+    6. Danos Morais e Assedio
+    7. Equilibrio Trabalho
+    8. Insegurança no Trabalho
     
     *Todos os itens são avaliados em escala Likert de 5 pontos.*
 
