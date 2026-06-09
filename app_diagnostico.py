@@ -227,6 +227,81 @@ try:
             st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown("---")
+
+    # =========================================================================
+    # INSERÇÃO DO TEXTO METODOLÓGICO LONGO
+    # =========================================================================
+    st.subheader("📝 Fundamentação e Metodologia do Diagnóstico")
+    
+    st.markdown("""
+    Quanto à identificação dos fatores psicossociais relacionados ao trabalho, utilizamos a metodologia baseada na ferramenta internacionalmente reconhecida **Copenhagen Psychosocial Questionnaire (COPSOQ II)**, em versão adaptada de 40 itens, aplicada por meio de plataforma digital especializada, para coleta de informações junto aos trabalhadores.
+
+    #### ⚖️ Fundamentação Legal
+    A **Portaria MTE nº 1.419/2024** atualizou o Capítulo 1.5 da **NR-01**, incluindo os *Fatores Psicossociais Relacionados ao Trabalho (FRPRT)* no processo de gestão de riscos, em conformidade com a **NR-17**. Os trechos a seguir destacam essa exigência:
+    * **Item 1.5.3.1.4:** *"O gerenciamento de riscos deve abranger agentes físicos, químicos, biológicos, riscos de acidentes e fatores ergonômicos, incluindo os fatores psicossociais."*
+    * **Item 1.5.3.2.1:** *"As condições de trabalho, nos termos da NR-17, devem incluir os fatores psicossociais."*
+    * **Item 1.5.4.4.5.3:** *"A avaliação de riscos ergonômicos, incluindo psicossociais, deve considerar as exigências da atividade e a eficácia das medidas de prevenção."*
+
+    #### 🔬 Metodologia de Identificação
+    O método aplicado tem como objetivo identificar possíveis situações estressoras no ambiente de trabalho, por meio da coleta estruturada de informações junto à empresa, aos trabalhadores e de visitas de campo. 
+    
+    O **COPSOQ II** é um instrumento multidimensional com consenso internacional quanto à sua validade, abrangência e aplicabilidade na avaliação de riscos psicossociais em contexto laboral. A versão adaptada utilizada nesta metodologia contempla 40 itens, derivados da versão curta do COPSOQ II, organizados em múltiplas dimensões que abrangem:
+    1. Exigências Laborais
+    2. Organização do Trabalho e Conteúdo
+    3. Relações Sociais e Liderança
+    4. Interface Trabalho-Indivíduo
+    5. Valores no Local de Trabalho
+    6. Saúde e Bem-Estar
+    
+    *Todos os itens são avaliados em escala Likert de 5 pontos.*
+
+    #### 📊 Critérios de Interpretação dos Resultados
+    O instrumento segue uma escala de resposta estruturada in níveis de frequência, variando de **1 a 5**, onde:
+    * **1** representa *"Nunca"*
+    * **2** representa *"Raramente"*
+    * **3** representa *"Às vezes"*
+    * **4** representa *"Frequentemente"*
+    * **5** representa *"Sempre"*
+
+    Essa metodologia permite quantificar percepções subjetivas de forma padronizada, possibilitando análise comparativa entre indivíduos, equipes e dimensões organizacionais. A tabulação é realizada por meio do cálculo de médias aritméticas simples, tanto no nível geral quanto por dimensões específicas do ambiente de trabalho.
+    
+    A classificação de risco é derivada da média obtida, sendo categorizada em níveis progressivos de criticidade:
+    """)
+
+    # Tabela Visual dos Critérios
+    st.markdown("""
+    | Média Obtida | Classificação de Risco | Nível de Criticidade |
+    | :--- | :--- | :--- |
+    | 🟢 **≤ 1.99** | **IRRELEVANTE** | Exposição insignificante a estressores |
+    | 🟢 **2.00 a 2.99** | **BAIXO** | Situação sob controle e estável |
+    | 🟡 **3.00 a 3.99** | **MÉDIO** | Alerta; requer atenção a médio prazo |
+    | 🔴 **4.00 a 4.50** | **ALTO** | Crítico; exige intervenção programada |
+    | 🚨 **> 4.50** | **CRÍTICO** | Extremo; exige ação imediata de contenção |
+    """)
+
+    st.markdown("""
+    #### 👥 Procedimento de Aplicação e Amostragem
+    O questionário é aplicado ao conjunto de funcionários da organização, **sem identificação de setor ou função**. Essa opção metodológica fundamenta-se em três razões de ordem prática e ética:
+    * **Preservação efetiva do anonimato:** Em setores com reduzido número de colaboradores, a associação entre cargo e resposta tornaria inevitável a identificação do respondente, comprometendo a integridade ética do processo.
+    * **Fidedignidade dos dados coletados:** O preenchimento de informações ocupacionais é fonte recorrente de erros sistemáticos, como classificação incorreta de setor ou função, que comprometem a qualidade da tabulação.
+    * **Conformidade normativa:** A NR-01 não determina a segmentação por setor como requisito obrigatório para a avaliação dos fatores psicossociais, sendo a avaliação institucional do perfil de risco igualmente válida para fins de gestão e composição do PGR.
+
+    > ⚠️ **Adesão Mínima:** Deverá ser alcançado um índice mínimo de **70% de adesão** do quadro total de funcionários para que os resultados sejam considerados representativos. Caso esse percentual não seja atingido, recomenda-se nova rodada de aplicação. As respostas são estritamente anônimas e confidenciais.
+
+    #### 📂 Análise e Inserção no PGR
+    Após a fase de coleta, o profissional deverá utilizar os relatórios gerados pela plataforma de aplicação do COPSOQ II para identificar a presença e o nível de exposição aos fatores de risco psicossociais. Na sequência, será realizado o anexo dos resultados dos fatores de risco ergonômicos psicossociais diretamente no **PGR (Programa de Gerenciamento de Riscos)**.
+
+    #### 📅 Vigência
+    A metodologia de avaliação será implementada em acompanhamento à atualização da nova redação da NR-01, que entrará em vigor em **26 de maio de 2026**.
+    
+    ---
+    *ID de Controle Emissor: SSOCIAL MEDCURITIBA-V2026*
+    """)
+    st.markdown("<br>", unsafe_allow_html=True)
+    # =========================================================================
+
+    # --- Exibição Condicional de Textos/Planos de Ação (Abaixo fica o seu if "Baixo"...) ---
 
     # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
