@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import pandas as pd
 import urllib.parse
@@ -54,6 +55,10 @@ try:
     df_completo = carregar_dados()
     col_data = df_completo.columns[0]
     col_cnpj = df_completo.columns[1] # Segunda coluna da planilha
+    
+    # FORÇAR FORMATO DE DATA BRASILEIRO NO DATAFRAME COMPLETO
+    if col_data in df_completo.columns:
+        df_completo[col_data] = pd.to_datetime(df_completo[col_data], errors='coerce')
     
     # Lógica de Captura do CNPJ via URL
     params = st.query_params
@@ -126,8 +131,9 @@ try:
     col_d1.metric(label="Total de Questionários", value=len(df_original))
     
     if not df_original[col_data].isna().all():
-        data_inicio = pd.to_datetime(df_original[col_data], errors='coerce').min().strftime('%d/%m/%Y')
-        data_fim = pd.to_datetime(df_original[col_data], errors='coerce').max().strftime('%d/%m/%Y')
+        # Formata o início e fim da pesquisa explicitamente no formato brasileiro
+        data_inicio = df_original[col_data].min().strftime('%d/%m/%Y')
+        data_fim = df_original[col_data].max().strftime('%d/%m/%Y')
         col_d2.metric(label="📅 Início da Pesquisa", value=data_inicio)
         col_d3.metric(label="📅 Término da Pesquisa", value=data_fim)
     else:
@@ -256,7 +262,7 @@ try:
     7. Equilibrio Trabalho
     8. Insegurança no Trabalho
     
-    *Todos os itens são avaliados em escala Likert de 5 pontos.*
+    *Todos os itens are avaliados em escala Likert de 5 pontos.*
 
     #### 📊 Critérios de Interpretação dos Resultados
     O instrumento segue uma escala de resposta estruturada in níveis de frequência, variando de **1 a 5**, onde:
@@ -303,8 +309,6 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
     # =========================================================================
 
-    # --- Exibição Condicional de Textos/Planos de Ação (Abaixo fica o seu if "Baixo"...) ---
-
     # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
         st.subheader("📋 Plano de Ação Sugerido - Grau de Risco Baixo")
@@ -328,7 +332,7 @@ try:
 - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
 
 7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
-- Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
+- Treinamentos sobre gestão do tempo, quality de vida, saúde mental e limites saudáveis no ambiente de trabalho.
 
 8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
 - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
