@@ -40,13 +40,20 @@ def buscar_nome_empresa(cnpj_limpo):
 
 # Classificação dos níveis de risco e suas cores
 def obter_classificacao_risco(media):
-    if media <= 1.99:
+    # CORREÇÃO 1: Trata valores nulos para não caírem no 'else' como Risco Crítico
+    if pd.isna(media):
+        return "Sem Dados", "#9E9E9E", "⚪"
+    
+    # CORREÇÃO 2: Arredonda para 2 casas decimais, eliminando as lacunas invisíveis (ex: 1.995)
+    media_ajustada = round(media, 2)
+    
+    if media_ajustada <= 1.99:
         return "Risco Irrelevante", "#2E7D32", "🟢"
-    elif 2.0 <= media <= 2.99:
+    elif media_ajustada <= 2.99:
         return "Risco Baixo", "#4CAF50", "🟢"
-    elif 3.0 <= media <= 3.99:
+    elif media_ajustada <= 3.99:
         return "Risco Médio", "#FF9800", "🟡"
-    elif 4.0 <= media <= 4.5:
+    elif media_ajustada <= 4.50:
         return "Risco Alto", "#E53935", "🔴"
     else:
         return "Risco Crítico", "#8B0000", "🚨"
@@ -159,11 +166,11 @@ try:
 
     st.markdown("---")
 
-    # --- NOVO GRÁFICO: DISTRIBUIÇÃO POR QUESTIONÁRIOS (LINHAS) ---
+    # --- GRÁFICO: DISTRIBUIÇÃO POR QUESTIONÁRIOS ---
     st.subheader("📊 Quantidade de Funcionários por Nível de Risco")
     
-    # Calcula a média horizontal de cada linha (cada funcionário individualmente)
-    medias_por_funcionario = df_perguntas.mean(axis=1)
+    # CORREÇÃO 3: Arredonda também as médias das linhas para evitar furos na contagem do gráfico
+    medias_por_funcionario = df_perguntas.mean(axis=1).round(2)
     
     contagem_funcionarios = {
         "Risco Irrelevante (<=1.99)": int((medias_por_funcionario <= 1.99).sum()),
@@ -235,11 +242,7 @@ try:
     st.markdown("---")
     st.markdown("---")
 
-    # =========================================================================
-    # INSERÇÃO DO TEXTO METODOLÓGICO LONGO
-    # =========================================================================
     st.subheader("📝 Fundamentação e Metodologia do Diagnóstico")
-    
     st.markdown("""
     Quanto à identificação dos fatores psicossociais relacionados ao trabalho, utilizamos a metodologia baseada na ferramenta internacionalmente reconhecida **Copenhagen Psychosocial Questionnaire (COPSOQ II)**, em versão adaptada de 40 itens, aplicada por meio de plataforma digital especializada, para coleta de informações junto aos trabalhadores.
 
@@ -262,10 +265,10 @@ try:
     7. Equilibrio Trabalho
     8. Insegurança no Trabalho
     
-    *Todos os itens are avaliados em escala Likert de 5 pontos.*
+    *Todos os itens são avaliados em escala Likert de 5 pontos.*
 
     #### 📊 Critérios de Interpretação dos Resultados
-    O instrumento segue uma escala de resposta estruturada in níveis de frequência, variando de **1 a 5**, onde:
+    O instrumento segue uma escala de resposta estruturada em níveis de frequência, variando de **1 a 5**, onde:
     * **1** representa *"Nunca"*
     * **2** representa *"Raramente"*
     * **3** representa *"Às vezes"*
@@ -307,7 +310,6 @@ try:
     *ID de Controle Emissor: SSOCIAL MEDCURITIBA-V2026*
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    # =========================================================================
 
     # --- Exibição Condicional de Textos/Planos de Ação ---
     if "Baixo" in nome_risco:
@@ -332,7 +334,7 @@ try:
 - Treinamentos sobre ética, respeito interpessoal e prevenção ao assédio moral e sexual.
 
 7. **Equilíbrio Trabalho–Vida Pessoal** (Rotina, pausas e qualidade de vida)  
-- Treinamentos sobre gestão do tempo, quality de vida, saúde mental e limites saudáveis no ambiente de trabalho.
+- Treinamentos sobre gestão do tempo, qualidade de vida, saúde mental e limites saudáveis no ambiente de trabalho.
 
 8. **Insegurança no Trabalho** (Incertezas, estabilidade e mudanças organizacionais)  
 - Treinamentos sobre adaptação a mudanças organizacionais e comunicação corporativa.
