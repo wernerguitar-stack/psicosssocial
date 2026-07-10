@@ -21,7 +21,8 @@ nome_aba_codificado = urllib.parse.quote(NOME_DA_ABA)
 URL_DIAGNOSTICO = f"https://docs.google.com/spreadsheets/d/{ID_DA_PLANILHA}/gviz/tq?tqx=out:csv&sheet={nome_aba_codificado}"
 
 def carregar_dados():
-    df = pd.read_csv(URL_DIAGNOSTICO)
+    # O engine='python' garante que ele ignore otimizações em C/Arrow que causam o SegFault
+    df = pd.read_csv(URL_DIAGNOSTICO, engine='python')
     df.columns = [col.strip() for col in df.columns]
     return df
 
